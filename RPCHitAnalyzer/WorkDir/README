@@ -1,0 +1,2 @@
+Running the PSimHitAnalyzer on all input files in Data :
+for file in `ls ../Data/ | grep SingleMu`; do echo "inputFile='$file'" > extraInfo.py ; cmsRun myrpcsimhitanalyzer_fileset_cfg.py; done

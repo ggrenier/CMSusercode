@@ -1,0 +1,7 @@
+In a ROOT session started in this directory :
+
+.L src/RPC_MultiHisto.cc
+.L scripts/Utilities.C
+
+dataAccess a(filename); //or
+dataAccess a(filename,dirname);
