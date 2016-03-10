@@ -18,6 +18,8 @@
 //
 
 
+
+
 // system include files
 #include <memory>
 #include <set>
@@ -60,90 +62,17 @@
 #include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/RPC_MultiHisto.h"
 #include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/HistoBooker_TFileService.h"
 
+//Local classes
+#include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/ZvertexCalculator.h"
+
 
 //ROOT minimisation
 #include "Math/Functor.h"
 #include "Math/GSLMinimizer1D.h"
 
-//
-// helper class to compute Z-vertex
-//
-struct hitData
-{
-  double x,y;
-  double r;
-  double z;
-  double t;
-  double localdirEta,localdirPhi,localdirTheta;
-  int region;
-  int station;
-  int ring;
-};
 
 
 
-class ZvertexCalculator
-{
-public:
-  ZvertexCalculator() : region(1), b(1), c(0), cosbeta(1), sinbeta(0), hit_time(0) {}
-
-
-  ZvertexCalculator(hitData &hit) 
-  {
-    setHitData(hit);
-  }
-  
-  void setHitData(hitData &hit)
-  {
-    region=hit.region;
-    b=hit.t*RPC::cspeed();
-    c=hit.r;
-    hit_time=hit.t;
-    double costheta=hit.z/hit.r;
-    cosbeta=computeSignOfCos()*costheta;
-    sinbeta=sqrt(1-cosbeta*cosbeta);
-    //std::cout << "Zvtx init " << b << " " << c << " " << region << " " << std::endl;
-  }
-  int computeSignOfCos()
-  {
-    if ((region==1 && b<c)||(region==-1 && b>c)) return 1;
-    else return -1;
-  }
-  void setTimeShift(double timeshift)
-  {
-    int signBefore=computeSignOfCos();
-    b=(hit_time-timeshift)*RPC::cspeed();
-    int signAfter=computeSignOfCos();
-    int signChange=signBefore*signAfter; 
-    cosbeta=signChange*cosbeta; //no need to change sinbeta
-  }
-  bool hasSolution() {return b>c*sinbeta;}
-  double aOneSolution(){return sqrt(b*b-c*c*sinbeta*sinbeta)+c*cosbeta;}
-  double aSecondSolution(){return c*cosbeta-sqrt(b*b-c*c*sinbeta*sinbeta);}
-  bool hasTwoSolution() {return hasSolution() && b<c && cosbeta>0;}
-  double aMinSolution()
-  {
-    if (! hasSolution()) return 3000000;
-    double sol=aOneSolution();
-    if (hasTwoSolution()) 
-      {
-	double sol2=aSecondSolution();
-	if (fabs(sol2)<fabs(sol)) sol=sol2;
-      }
-    if ((region==1 && b<c)||(region==-1 && b>c)) return sol;
-    return -sol;
-  }
-
-private:
-  //see http://en.wikipedia.org/wiki/Solution_of_triangles#Two_sides_and_non-included_angle_given_.28SSA.29
-  //for notation
-  int region;
-  double b;
-  double c;
-  double cosbeta;
-  double sinbeta;
-  double hit_time;
-};
 
 class ZvertexCalculatorMulti
 {
