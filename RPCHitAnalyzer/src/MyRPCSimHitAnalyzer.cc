@@ -65,73 +65,13 @@
 //Local classes
 #include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/ZvertexCalculator.h"
 #include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/ZvertexCalculatorMulti.h"
+#include "CMSRPCDPGUserCode/RPCHitAnalyzer/interface/hitDataPair.h"
 
 
 
 
 
 
-
-
-
-class hitDataPair
-{
-public:
-  hitDataPair(hitData &hit1, hitData &hit2)
-    : d1(hit1), d2(hit2)
-  {
-    ComputeDistance();
-    ComputeTime();
-    std::cout << "time in ns (before,after,expect)=("
-	      << timeBefore << "," << timeAfter << "," << timeExpect << ") ";
-  }
-
-  bool diffEncap() { return d1.region != d2.region;}
-  bool lightCone() { return timeAfter==timeExpect;}
-  bool lightCone(double timeError) { return fabs(timeAfter-timeExpect)<timeError;}
-
-  ZvertexCalculatorMulti* getVertex()
-  {
-    return FindZFromPair(d1,d2);
-  }
-
-  int station1() {return d1.station;}
-  int station2() {return d2.station;}
-  
-private:
-  hitData d1;
-  hitData d2;
-  double distance;
-  double timeBefore;
-  double timeAfter;
-  double timeExpect;
-
-  void ComputeDistance()
-  {
-    distance=0;
-    distance+=(d1.x-d2.x)*(d1.x-d2.x);
-    distance+=(d1.y-d2.y)*(d1.y-d2.y);
-    distance+=(d1.z-d2.z)*(d1.z-d2.z);
-    distance=sqrt(distance);
-  }
-  void ComputeTime()
-  {
-    timeBefore=0;
-    timeAfter=0;
-    if (d1.t > d2.t)
-      {
-	timeBefore=d2.t;
-	timeAfter=d1.t;
-      }
-    else
-      {
-	timeBefore=d1.t;
-	timeAfter=d2.t;
-      }
-    timeExpect=timeBefore+distance/RPC::cspeed();
-  }
-
-};
 
 
 
